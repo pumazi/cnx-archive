@@ -9,8 +9,8 @@ import os
 import json
 import psycopg2
 
-from . import get_settings
 from . import httpexceptions
+from .app import get_settings
 from .utils import split_ident_hash
 from .database import CONNECTION_SETTINGS_KEY, SQL
 

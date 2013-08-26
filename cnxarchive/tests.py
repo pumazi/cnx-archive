@@ -190,12 +190,12 @@ class ViewsTestCase(unittest.TestCase):
         cls.db_connection.close()
 
     def setUp(self):
-        from . import _set_settings
+        from .app import _set_settings
         _set_settings(self.settings)
         self.fixture.setUp()
 
     def tearDown(self):
-        from . import _set_settings
+        from .app import _set_settings
         _set_settings(None)
         self.fixture.tearDown()
 
