@@ -7,10 +7,20 @@
 # ###
 """Database models and utilities"""
 import os
+import contextlib
+import threading
+
 import psycopg2
+from psycopg2.pool import ThreadedConnectionPool
+
+from .app import get_settings
 
 
 CONNECTION_SETTINGS_KEY = 'db-connection-string'
+CONNECTION_MIN_CONNECTIONS_DEFAULT = 1
+CONNECTION_MAX_CONNECTIONS_DEFAULT = 1
+CONNECTION_MIN_CONNECTIONS_SETTINGS_KEY = 'db-connection-min-connections'
+CONNECTION_MAX_CONNECTIONS_SETTINGS_KEY = 'db-connection-max-connections'
 
 here = os.path.abspath(os.path.dirname(__file__))
 SQL_DIRECTORY = os.path.join(here, 'sql')
@@ -31,6 +41,58 @@ SQL = {
     'get-resource': _read_sql_file('get-resource'),
     'get-resource-by-filename': _read_sql_file('get-resource-by-filename'),
     }
+
+
+class BaseConnectionPool(ThreadedConnectionPool):
+    """An application settings aware connection pool.
+    This mostly means that the object doesn't initialize it's settings
+    on creation. Instead it looks them up via the application.
+    """
+
+    def __init__(self):
+        """Initialize the threading lock."""
+        self.closed = False
+
+        # These are settings looked up on use.
+        ##self.minconn = minconn
+        ##self.maxconn = maxconn
+        ##self._args = args
+        self._kwargs = {}
+
+        self._pool = []
+        self._used = {}
+        self._rused = {} # id(conn) -> key map
+        self._keys = 0
+
+        self._lock = threading.Lock()
+
+    @property
+    def _settings(self):
+        raise NotImplemented
+
+    @property
+    def minconn(self):
+        return self._settings.get(CONNECTION_MIN_CONNECTIONS_SETTINGS_KEY,
+                                  CONNECTION_MIN_CONNECTIONS_DEFAULT)
+
+    @property
+    def maxconn(self):
+        return self._settings.get(CONNECTION_MAX_CONNECTIONS_SETTINGS_KEY,
+                                  CONNECTION_MAX_CONNECTIONS_DEFAULT)
+
+    @property
+    def _args(self):
+        """Used by the AbstractConnectionPool during connection creation."""
+        return (self._settings[CONNECTION_SETTINGS_KEY],)
+
+
+class DatabaseConnectionPool(BaseConnectionPool):
+
+    @property
+    def _settings(self):
+        return get_settings()
+
+DBConnection = DatabaseConnectionPool()
 
 
 def initdb(settings):
