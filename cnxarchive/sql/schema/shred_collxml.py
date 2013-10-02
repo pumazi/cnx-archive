@@ -32,7 +32,7 @@ NODE_INS="INSERT INTO trees (parent_id,documentid,childorder) SELECT %s, module_
 NODE_NODOC_INS="INSERT INTO trees (parent_id,childorder) VALUES (%s, %s) returning nodeid"
 NODE_TITLE_UPD="UPDATE trees set title = %s from modules where nodeid = %s and (documentid is null or (documentid = module_ident and name != %s))"
 
-con=psycopg2.connect('dbname=repository')
+con=psycopg2.connect('dbname=repository user=rhaptos port=5433')
 cur=con.cursor()
 
 def _do_insert(pid,cid,oid=0,ver=0):
