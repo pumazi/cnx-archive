@@ -28,13 +28,13 @@ ns = { "cnx":"http://cnx.rice.edu/cnxml",
        "rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 }
 
-NODE_INS=plpy.prepare("INSERT INTO trees (parent_id,documentid,childorder) SELECT $1, module_ident, $2 from modules where moduleid = $3 and version = $4 returning nodeid", ("int","int","text","text"))
+NODE_INS=plpy.prepare("INSERT INTO trees (parent_id,documentid,childorder,latest) SELECT $1, module_ident, $2, $3 from modules where moduleid = $4 and version = $5 returning nodeid", ("int","int","bool","text","text"))
 NODE_NODOC_INS=plpy.prepare("INSERT INTO trees (parent_id,childorder) VALUES ($1, $2) returning nodeid", ("int","int"))
 NODE_TITLE_UPD=plpy.prepare("UPDATE trees set title = $1 from modules where nodeid = $2 and (documentid is null or (documentid = module_ident and name != $1))", ("text","int"))
 
-def _do_insert(pid,cid,oid=0,ver=0):
+def _do_insert(pid,cid,oid=0,ver=0,latest=False):
     if oid:
-        res = plpy.execute(NODE_INS,(pid,cid,oid,ver))
+        res = plpy.execute(NODE_INS,(pid,cid,latest,oid,ver))
         if res.nrows() == 0: # no documentid found
             plpy.execute(NODE_NODOC_INS,(pid,cid))
     else:
@@ -66,7 +66,7 @@ class ModuleHandler(sax.ContentHandler):
 
         if localname == 'module':
             self.childorder[-1] += 1
-            nodeid = _do_insert(self.parents[-1],self.childorder[-1],attrs[(None,"document")],attrs[(ns["cnxorg"],"version-at-this-collection-version")])
+            nodeid = _do_insert(self.parents[-1],self.childorder[-1],attrs[(None,"document")],attrs[(ns["cnxorg"],"version-at-this-collection-version")],attrs[None,"version"]=='latest')
             if nodeid:
                 self.nodeid = nodeid
 
