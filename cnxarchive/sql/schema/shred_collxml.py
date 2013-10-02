@@ -28,16 +28,16 @@ ns = { "cnx":"http://cnx.rice.edu/cnxml",
        "rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 }
 
-NODE_INS="INSERT INTO trees (parent_id,documentid,childorder) SELECT %s, module_ident, %s from modules where moduleid = %s and version = %s returning nodeid"
+NODE_INS="INSERT INTO trees (parent_id,documentid,childorder,latest) SELECT %s, module_ident, %s, %s from modules where moduleid = %s and version = %s returning nodeid"
 NODE_NODOC_INS="INSERT INTO trees (parent_id,childorder) VALUES (%s, %s) returning nodeid"
 NODE_TITLE_UPD="UPDATE trees set title = %s from modules where nodeid = %s and (documentid is null or (documentid = module_ident and name != %s))"
 
 con=psycopg2.connect('dbname=repository user=rhaptos port=5433')
 cur=con.cursor()
 
-def _do_insert(pid,cid,oid=0,ver=0):
+def _do_insert(pid,cid,oid=0,ver=0,latest=True):
     if oid:
-        cur.execute(NODE_INS,(pid,cid,oid,ver))
+        cur.execute(NODE_INS,(pid,cid,latest,oid,ver))
         if cur.rowcount == 0: # no documentid found
             cur.execute(NODE_NODOC_INS,(pid,cid))
     else:
@@ -70,7 +70,7 @@ class ModuleHandler(sax.ContentHandler):
 
         if localname == 'module':
             self.childorder[-1] += 1
-            nodeid = _do_insert(self.parents[-1],self.childorder[-1],attrs[(None,"document")],attrs[(ns["cnxorg"],"version-at-this-collection-version")])
+            nodeid = _do_insert(self.parents[-1],self.childorder[-1],attrs[(None,"document")],attrs[(ns["cnxorg"],"version-at-this-collection-version")],attrs[None,"version"]=="latest")
             if nodeid:
                 self.nodeid = nodeid
 

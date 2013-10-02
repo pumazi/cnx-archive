@@ -131,7 +131,9 @@ class QueryRecord(Mapping):
 
     @property
     def highlighted_abstract(self):
+
         """Highlight the found terms in the abstract text."""
+        return None
         abstract_terms = self.fields.get('abstract', [])
         if not abstract_terms:
             return None
@@ -144,12 +146,17 @@ class QueryRecord(Mapping):
             with db_connection.cursor() as cursor:
                 cursor.execute(_read_sql_file('highlighted-abstract'),
                                arguments)
-                hl_abstract = cursor.fetchone()[0]
+                res = cursor.fetchone()
+                if res:
+                    hl_abstract = res[0]
+                else:
+                    hl_abstract =  None
         return hl_abstract
 
     @property
     def highlighted_fulltext(self):
         """Highlight the found terms in the fulltext."""
+        return None
         terms = self.fields.get('fulltext', [])
         if not terms:
             return None
@@ -162,7 +169,11 @@ class QueryRecord(Mapping):
             with db_connection.cursor() as cursor:
                 cursor.execute(_read_sql_file('highlighted-fulltext'),
                                arguments)
-                hl_fulltext = cursor.fetchone()[0]
+                res = cursor.fetchone()
+                if res:
+                    hl_fulltext = res[0]
+                else:
+                    hl_fulltext =  None
         return hl_fulltext
 
 

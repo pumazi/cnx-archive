@@ -32,7 +32,7 @@ NODE_INS=plpy.prepare("INSERT INTO trees (parent_id,documentid,childorder,latest
 NODE_NODOC_INS=plpy.prepare("INSERT INTO trees (parent_id,childorder) VALUES ($1, $2) returning nodeid", ("int","int"))
 NODE_TITLE_UPD=plpy.prepare("UPDATE trees set title = $1 from modules where nodeid = $2 and (documentid is null or (documentid = module_ident and name != $1))", ("text","int"))
 
-def _do_insert(pid,cid,oid=0,ver=0,latest=False):
+def _do_insert(pid,cid,oid=0,ver=0,latest=True):
     if oid:
         res = plpy.execute(NODE_INS,(pid,cid,latest,oid,ver))
         if res.nrows() == 0: # no documentid found
@@ -66,7 +66,7 @@ class ModuleHandler(sax.ContentHandler):
 
         if localname == 'module':
             self.childorder[-1] += 1
-            nodeid = _do_insert(self.parents[-1],self.childorder[-1],attrs[(None,"document")],attrs[(ns["cnxorg"],"version-at-this-collection-version")],attrs[None,"version"]=='latest')
+            nodeid = _do_insert(self.parents[-1],self.childorder[-1],attrs[(None,"document")],attrs[(ns["cnxorg"],"version-at-this-collection-version")],attrs[None,"version"]=="latest")
             if nodeid:
                 self.nodeid = nodeid
 
