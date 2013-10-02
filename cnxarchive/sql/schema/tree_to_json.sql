@@ -30,3 +30,27 @@ SELECT
 FROM t left join  modules m on t.value = m.module_ident
     WINDOW w as (ORDER BY corder) order by corder ) tree ;
 $$ LANGUAGE SQL;
+
+--
+-- Name: modules_in_tree(uuid, text); Type: FUNCTION; Schema: public; Owner: rhaptos
+--
+
+CREATE FUNCTION modules_in_tree(treeid int) RETURNS SETOF integer
+    LANGUAGE sql
+    AS $_$
+
+WITH RECURSIVE t(node, path, value) AS (
+    SELECT nodeid, ARRAY[nodeid], documentid
+    FROM trees
+    WHERE documentid = treeid
+UNION ALL
+    SELECT c1.nodeid, t.path || ARRAY[c1.nodeid], c1.documentid /* Recursion */
+    FROM trees c1 JOIN t ON (c1.parent_id = t.node)
+    WHERE not nodeid = any (t.path)
+)
+SELECT
+    value
+FROM t where value != treeid
+     ;
+$_$;
+
