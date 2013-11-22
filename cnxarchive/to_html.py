@@ -249,7 +249,7 @@ class ReferenceResolver:
                                           self.document_ident, ref))
                 else:
                     url_frag = url_frag and url_frag or ''
-                    path = '/contents/{}@{}{}'.format(uuid, version, url_frag)
+                    path = '/content/{}@{}{}'.format(uuid, version, url_frag)
                     anchor.set('href', path)
             elif ref_type == RESOURCE_REFERENCE:
                 try:
