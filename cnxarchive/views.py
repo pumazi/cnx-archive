@@ -43,7 +43,7 @@ def redirect_to_latest(cursor, id, path_format_string):
     except (TypeError, IndexError,): # None returned
         logger.debug("version was not supplied and could not be discovered.")
         raise httpexceptions.HTTPNotFound()
-    raise httpexceptions.HTTPFound(path_format_string \
+    raise httpexceptions.HTTPTemporaryRedirect(path_format_string \
             .format(id, latest_version))
 
 

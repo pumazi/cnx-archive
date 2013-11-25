@@ -41,3 +41,11 @@ class HTTPFound(HTTPException):
 
     def __init__(self, location):
         self.headers = [('Location', location,)]
+        self.message = """<HTML><HEAD/>
+<BODY>Latest version at <A href="{location}">{location}</A>
+</BODY>
+</HTML>""".format(location=location)
+
+class HTTPTemporaryRedirect(HTTPFound):
+    """307 Redirect"""
+    status = '307 Redirect'
