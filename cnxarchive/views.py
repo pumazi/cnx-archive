@@ -155,6 +155,24 @@ def get_export_file(cursor, id, version, type, exports_dirs):
 #   Views   #
 # ######### #
 
+def get_content_versions(environ, start_response):
+    """Retrieve a list of content versions for an ident-hash (uuid@version)."""
+    settings = get_settings()
+    ident_hash = environ['wsgiorg.routing_args']['ident_hash']
+    id, version = split_ident_hash(ident_hash)
+
+    with psycopg2.connect(settings[CONNECTION_SETTINGS_KEY]) as db_connection:
+        with db_connection.cursor() as cursor:
+            query = SQL['get-json-module-versions']
+            args = dict(id=id)
+            cursor.execute(query, args)
+            versions = str(cursor.fetchone()[0])
+    
+    status = "200 OK"
+    headers = [('Content-type', 'application/json',)]
+    start_response(status, headers)
+    return [versions]
+
 def get_content(environ, start_response):
     """Retrieve a piece of content using the ident-hash (uuid@version)."""
     settings = get_settings()

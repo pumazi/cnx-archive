@@ -110,6 +110,7 @@ def main(global_config, **settings):
     load_logging_configuration(logging_config_filepath)
 
     app = Application()
+    app.add_route('/contents/{ident_hash}/versions', 'cnxarchive.views:get_content_versions')
     app.add_route('/contents/{ident_hash}', 'cnxarchive.views:get_content')
     app.add_route('/resources/{hash}', 'cnxarchive.views:get_resource')
     app.add_route('/exports/{ident_hash}.{type}{ignore:(/.*)?}', 'cnxarchive.views:get_export')
