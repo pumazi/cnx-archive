@@ -490,11 +490,12 @@ def get_publication(environ, start_response):
     id = args['id']
     with psycopg2.connect(settings[CONNECTION_SETTINGS_KEY]) as db_connection:
         with db_connection.cursor() as cursor:
-            cursor.execute('SELECT state FROM publications WHERE id = %s', [id])
+            cursor.execute('''SELECT state, message FROM publications
+                              WHERE id = %s''', [id])
             state = cursor.fetchone()
             if not state:
                 raise httpexceptions.HTTPNotFound()
-            state = state[0]
+            state, message = state
 
             if state == 'Done/Success':
                 cursor.execute('''SELECT uuid,
@@ -512,3 +513,7 @@ def get_publication(environ, start_response):
             elif state == 'Processing':
                 raise httpexceptions.HTTPAccepted(
                         message=state)
+
+            elif state == 'Failed/Error':
+                raise httpexceptions.HTTPBadRequest(
+                        message=message)

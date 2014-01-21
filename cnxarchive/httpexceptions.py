@@ -48,3 +48,10 @@ class HTTPAccepted(HTTPException):
 
     def __init__(self, message=''):
         self.message = message
+
+
+class HTTPBadRequest(HTTPException):
+    status = '400 Bad Request'
+
+    def __init__(self, message=''):
+        self.message = message

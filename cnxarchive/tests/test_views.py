@@ -1444,3 +1444,18 @@ class ViewsTestCase(unittest.TestCase):
 
         exception = raiser.exception
         self.assertEqual(exception.message, 'Processing')
+
+    def test_get_publication_failed_or_error(self):
+        # Build the request
+        environ = self._make_environ()
+        environ['wsgiorg.routing_args'] = {
+                'id': 3,
+                }
+
+        # Call the view
+        from ..views import get_publication
+        with self.assertRaises(httpexceptions.HTTPBadRequest) as raiser:
+            get_publication(environ, self._start_response)
+
+        exception = raiser.exception
+        self.assertEqual(exception.message, 'Missing keywords.')
