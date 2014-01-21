@@ -422,4 +422,23 @@ CREATE TABLE overall_hit_ranks (
   rank INTEGER DEFAULT NULL
 );
 
+CREATE TYPE publication_states AS ENUM (
+    'Done/Success',
+    'Processing',
+    'Waiting for acceptance',
+    'Failed/Error',
+    'Gummy'
+);
+
+CREATE TABLE publications (
+  id serial PRIMARY KEY,
+  note TEXT,
+  roles JSON,
+  licensors JSON,
+  epub_url TEXT,
+  module_ident INTEGER DEFAULT NULL,
+  state publication_states DEFAULT 'Processing',
+  message TEXT
+);
+
 COMMIT;

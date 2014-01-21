@@ -1399,3 +1399,21 @@ class ViewsTestCase(unittest.TestCase):
         sitemap = sitemap(environ, self._start_response)[0]
         with open(os.path.join(TEST_DATA_DIRECTORY, 'sitemap.xml'), 'r') as file:
             self.assertMultiLineEqual(sitemap, file.read())
+
+    def test_get_publication(self):
+        # Build the request
+        environ = self._make_environ()
+        environ['wsgiorg.routing_args'] = {
+                'id': 1,
+                }
+
+        # Call the view
+        from ..views import get_publication
+        with self.assertRaises(httpexceptions.HTTPFound) as raiser:
+            get_publication(environ, self._start_response)
+
+        # Should redirect to the contents url
+        exception = raiser.exception
+        expected_location = '/contents/209deb1f-1a46-4369-9e0d-18674cf58a3e@7'
+        self.assertEqual(exception.headers, [
+            ('Location', expected_location)])
