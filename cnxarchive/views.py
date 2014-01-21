@@ -490,14 +490,25 @@ def get_publication(environ, start_response):
     id = args['id']
     with psycopg2.connect(settings[CONNECTION_SETTINGS_KEY]) as db_connection:
         with db_connection.cursor() as cursor:
-            cursor.execute('''SELECT uuid,
-                                concat_ws('.', m.major_version, m.minor_version)
-                              FROM modules m
-                              JOIN publications p
-                              ON p.module_ident = m.module_ident
-                              WHERE p.id = %s''', [id])
-            module = cursor.fetchone()
-            if module:
-                # publication finished, redirect to the contents url
-                raise httpexceptions.HTTPFound(
-                        '/contents/{}@{}'.format(module[0], module[1]))
+            cursor.execute('SELECT state FROM publications WHERE id = %s', [id])
+            state = cursor.fetchone()
+            if not state:
+                raise httpexceptions.HTTPNotFound()
+            state = state[0]
+
+            if state == 'Done/Success':
+                cursor.execute('''SELECT uuid,
+                                    concat_ws('.', m.major_version, m.minor_version)
+                                  FROM modules m
+                                  JOIN publications p
+                                  ON p.module_ident = m.module_ident
+                                  WHERE p.id = %s''', [id])
+                module = cursor.fetchone()
+                if module:
+                    # publication finished, redirect to the contents url
+                    raise httpexceptions.HTTPFound(
+                            '/contents/{}@{}'.format(module[0], module[1]))
+                raise httpexceptions.HTTPInternalServerError()
+            elif state == 'Processing':
+                raise httpexceptions.HTTPAccepted(
+                        message=state)

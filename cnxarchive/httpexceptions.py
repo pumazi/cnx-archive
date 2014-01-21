@@ -41,3 +41,10 @@ class HTTPFound(HTTPException):
 
     def __init__(self, location):
         self.headers = [('Location', location,)]
+
+
+class HTTPAccepted(HTTPException):
+    status = '202 Accepted'
+
+    def __init__(self, message=''):
+        self.message = message

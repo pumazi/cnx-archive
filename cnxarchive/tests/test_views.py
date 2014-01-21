@@ -1400,7 +1400,7 @@ class ViewsTestCase(unittest.TestCase):
         with open(os.path.join(TEST_DATA_DIRECTORY, 'sitemap.xml'), 'r') as file:
             self.assertMultiLineEqual(sitemap, file.read())
 
-    def test_get_publication(self):
+    def test_get_publication_success(self):
         # Build the request
         environ = self._make_environ()
         environ['wsgiorg.routing_args'] = {
@@ -1417,3 +1417,30 @@ class ViewsTestCase(unittest.TestCase):
         expected_location = '/contents/209deb1f-1a46-4369-9e0d-18674cf58a3e@7'
         self.assertEqual(exception.headers, [
             ('Location', expected_location)])
+
+    def test_get_publication_not_found(self):
+        # Build the request
+        environ = self._make_environ()
+        environ['wsgiorg.routing_args'] = {
+                'id': 100,
+                }
+
+        # Call the view
+        from ..views import get_publication
+        self.assertRaises(httpexceptions.HTTPNotFound,
+                get_publication, environ, self._start_response)
+
+    def test_get_publication_processing(self):
+        # Build the request
+        environ = self._make_environ()
+        environ['wsgiorg.routing_args'] = {
+                'id': 2,
+                }
+
+        # Call the view
+        from ..views import get_publication
+        with self.assertRaises(httpexceptions.HTTPAccepted) as raiser:
+            get_publication(environ, self._start_response)
+
+        exception = raiser.exception
+        self.assertEqual(exception.message, 'Processing')
