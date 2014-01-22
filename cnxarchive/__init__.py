@@ -120,7 +120,7 @@ def main(global_config, **settings):
     app.add_route('/search', 'cnxarchive.views:search')
     app.add_route('/extras', 'cnxarchive.views:extras')
     app.add_route('/sitemap.xml', 'cnxarchive.views:sitemap')
-    app.add_route('/publications/{id}', 'cnxarchive.views:get_publication')
+    app.add_route('/publications/{ident_hash}', 'cnxarchive.views:get_publication')
 
     mandatory_settings = ['exports-directories', 'exports-allowable-types']
     for setting in mandatory_settings:

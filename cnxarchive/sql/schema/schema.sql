@@ -432,13 +432,22 @@ CREATE TYPE publication_states AS ENUM (
 
 CREATE TABLE publications (
   id serial PRIMARY KEY,
-  note TEXT,
+  submitter TEXT NOT NULL,
+  submitlog TEXT NOT NULL,
   roles JSON,
-  licensors JSON,
+  license_accepted BOOLEAN DEFAULT FALSE,
   epub_url TEXT,
-  module_ident INTEGER DEFAULT NULL,
+  state publication_states DEFAULT 'Processing'
+);
+
+CREATE TABLE pending_modules (
+  publication_id INTEGER NOT NULL,
+  uuid UUID NOT NULL,
+  major_version INTEGER,
+  minor_version INTEGER DEFAULT NULL,
   state publication_states DEFAULT 'Processing',
-  message TEXT
+  message TEXT,
+  PRIMARY KEY (publication_id, uuid)
 );
 
 COMMIT;

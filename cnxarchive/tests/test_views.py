@@ -1404,7 +1404,7 @@ class ViewsTestCase(unittest.TestCase):
         # Build the request
         environ = self._make_environ()
         environ['wsgiorg.routing_args'] = {
-                'id': 1,
+                'ident_hash': '209deb1f-1a46-4369-9e0d-18674cf58a3e@7',
                 }
 
         # Call the view
@@ -1422,7 +1422,7 @@ class ViewsTestCase(unittest.TestCase):
         # Build the request
         environ = self._make_environ()
         environ['wsgiorg.routing_args'] = {
-                'id': 100,
+                'ident_hash': '209deb1f-1a46-4369-9e0d-18674cf58a3e@100',
                 }
 
         # Call the view
@@ -1434,7 +1434,7 @@ class ViewsTestCase(unittest.TestCase):
         # Build the request
         environ = self._make_environ()
         environ['wsgiorg.routing_args'] = {
-                'id': 2,
+                'ident_hash': '209deb1f-1a46-4369-9e0d-18674cf58a3e@8',
                 }
 
         # Call the view
@@ -1449,7 +1449,7 @@ class ViewsTestCase(unittest.TestCase):
         # Build the request
         environ = self._make_environ()
         environ['wsgiorg.routing_args'] = {
-                'id': 3,
+                'ident_hash': 'f3c9ab70-a916-4d8c-9256-42953287b4e9@4',
                 }
 
         # Call the view

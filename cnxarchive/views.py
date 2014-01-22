@@ -487,29 +487,25 @@ def get_publication(environ, start_response):
     """
     settings = get_settings()
     args = environ['wsgiorg.routing_args']
-    id = args['id']
+    ident_hash = args['ident_hash']
+    id, version = split_ident_hash(ident_hash)
     with psycopg2.connect(settings[CONNECTION_SETTINGS_KEY]) as db_connection:
         with db_connection.cursor() as cursor:
-            cursor.execute('''SELECT state, message FROM publications
-                              WHERE id = %s''', [id])
-            state = cursor.fetchone()
-            if not state:
+            cursor.execute('''SELECT p.state, m.message
+                FROM publications p LEFT JOIN pending_modules m ON p.id = m.publication_id
+                WHERE m.uuid = %s
+                AND concat_ws('.', m.major_version, m.minor_version) = %s''',
+                [id, version])
+            state_n_message = cursor.fetchone()
+            if not state_n_message:
                 raise httpexceptions.HTTPNotFound()
-            state, message = state
+            state, message = state_n_message
 
             if state == 'Done/Success':
-                cursor.execute('''SELECT uuid,
-                                    concat_ws('.', m.major_version, m.minor_version)
-                                  FROM modules m
-                                  JOIN publications p
-                                  ON p.module_ident = m.module_ident
-                                  WHERE p.id = %s''', [id])
-                module = cursor.fetchone()
-                if module:
-                    # publication finished, redirect to the contents url
-                    raise httpexceptions.HTTPFound(
-                            '/contents/{}@{}'.format(module[0], module[1]))
-                raise httpexceptions.HTTPInternalServerError()
+                # publication finished, redirect to the contents url
+                raise httpexceptions.HTTPFound(
+                        '/contents/{}@{}'.format(id, version))
+
             elif state == 'Processing':
                 raise httpexceptions.HTTPAccepted(
                         message=state)
